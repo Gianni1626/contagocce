@@ -1,0 +1,1255 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>Contagocce Rev3</title>
+  <style>
+    :root{
+      --bg:#071022;
+      --panel:#0e1a3a;
+      --text:#e9eeff;
+      --muted:#a7b2d8;
+      --btn:#162a62;
+      --btn2:#1d3780;
+      --accent:#2b6cff;
+      --danger:#dc2626;
+      --ok:#22c55e;
+      --radius:18px;
+    }
+    *{ box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+    body{
+      margin:0; min-height:100vh; padding:14px;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 700px at 50% 10%, #17307a, var(--bg));
+      color: var(--text);
+      display:flex; justify-content:center;
+    }
+    .wrap{ width:min(980px, 100%); display:flex; flex-direction:column; gap:12px; }
+
+    .header{
+      display:flex; flex-wrap:wrap; gap:10px;
+      align-items:flex-end; justify-content:space-between;
+    }
+    .title{ font-size:20px; font-weight:820; }
+    .sub{ font-size:12px; color:var(--muted); line-height:1.25; max-width: 72ch; }
+    .kbd{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
+
+    .badge{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 10px; border-radius:999px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+      color:var(--muted);
+      font-size:12px;
+    }
+    .dot{ width:10px; height:10px; border-radius:50%; background: var(--danger); }
+    .dot.on{ background: var(--ok); }
+
+    .panel{
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.10);
+      border-radius: var(--radius);
+      overflow:hidden;
+      box-shadow: 0 18px 60px rgba(0,0,0,.40);
+    }
+    .head{
+      padding:12px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      background: rgba(0,0,0,.14);
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      flex-wrap:wrap;
+    }
+    .h{ font-weight:820; }
+    .small{ font-size:12px; color:var(--muted); }
+
+    .body{ padding:12px; display:flex; flex-direction:column; gap:10px; }
+
+    .metrics{
+      display:grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap:10px;
+    }
+    .metric{
+      padding:12px;
+      border-radius: 16px;
+      background: rgba(0,0,0,.18);
+      border:1px solid rgba(255,255,255,.08);
+    }
+    .metric .k{ font-size:12px; color:var(--muted); }
+    .metric .v{ font-size:28px; font-weight:850; margin-top:6px; line-height:1; }
+    .metric .u{ font-size:12px; color:var(--muted); margin-top:4px; }
+    .metric .subline{ font-size:12px; color:var(--muted); margin-top:6px; }
+
+    .controls{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    label{ display:block; font-size:12px; color:var(--muted); margin-bottom:6px; }
+    input, select{
+      width:100%;
+      padding:10px 10px;
+      border-radius: 12px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      outline:none;
+      font-size:14px;
+    }
+
+    .btnline{ display:flex; gap:10px; flex-wrap:wrap; }
+    button{
+      border:1px solid rgba(255,255,255,.10);
+      background: var(--btn);
+      color:var(--text);
+      border-radius: 14px;
+      padding:10px 12px;
+      font-size:14px;
+      font-weight:850;
+      cursor:pointer;
+      user-select:none;
+      transition: transform .05s ease, background .15s ease;
+    }
+    button:hover{ background: var(--btn2); }
+    button:active{ transform: translateY(1px); }
+    .primary{ background: rgba(43,108,255,.92); border-color: rgba(43,108,255,.92); }
+    .primary:hover{ background: rgba(43,108,255,.82); }
+    .danger{ background: rgba(220,38,38,.18); border-color: rgba(220,38,38,.35); }
+    .danger:hover{ background: rgba(220,38,38,.26); }
+    .ok{ background: rgba(34,197,94,.18); border-color: rgba(34,197,94,.35); }
+    .ok:hover{ background: rgba(34,197,94,.24); }
+
+    /* TAP */
+    .tapZone{
+      height: clamp(160px, 22vh, 280px);
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,.14);
+      background:
+        radial-gradient(800px 300px at 50% 20%, rgba(43,108,255,.28), rgba(0,0,0,.05)),
+        rgba(0,0,0,.16);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding:14px;
+      position:relative;
+      overflow:hidden;
+      touch-action: manipulation;
+    }
+    .tapZone:active{
+      background:
+        radial-gradient(800px 300px at 50% 20%, rgba(34,197,94,.26), rgba(0,0,0,.06)),
+        rgba(0,0,0,.16);
+    }
+    .tapText .big{ font-size:20px; font-weight:900; }
+    .tapText .sm{ margin-top:6px; font-size:12px; color:var(--muted); line-height:1.35; }
+    .pulse{
+      position:absolute; inset:0;
+      pointer-events:none;
+      opacity:0;
+      background: radial-gradient(200px 200px at var(--x,50%) var(--y,50%), rgba(255,255,255,.18), transparent 60%);
+      transition: opacity .15s ease;
+    }
+    .pulse.on{ opacity:1; }
+
+    .hint{
+      font-size:12px; color:var(--muted);
+      padding:10px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.05);
+      border:1px dashed rgba(255,255,255,.18);
+      line-height:1.35;
+    }
+    .log{
+      font-size:12px; color:var(--muted);
+      max-height:220px; overflow:auto;
+      padding:10px; border-radius: 14px;
+      background: rgba(0,0,0,.18);
+      border:1px solid rgba(255,255,255,.08);
+      white-space:pre-wrap;
+    }
+    .log.compact{ font-size:11px; max-height:140px; }
+
+    /* MENU */
+    .menuGrid{
+      display:grid; gap:12px;
+      grid-template-columns: 1fr;
+      padding:12px;
+    }
+    @media (min-width: 820px){
+      .menuGrid{ grid-template-columns: 1fr 1fr; }
+    }
+    .menuCard{
+      padding:14px;
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.16);
+    }
+    .menuTitle{ font-weight:900; font-size:16px; }
+    .menuDesc{ color:var(--muted); font-size:12px; margin-top:6px; line-height:1.35; }
+
+    /* CAMERA */
+    .camWrap{
+      border-radius: 18px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      overflow:hidden;
+      position:relative;
+      touch-action: none;
+    }
+    video{ width:100%; height:auto; display:block; background:#000; }
+    canvas#overlay{
+      position:absolute; inset:0;
+      width:100%; height:100%;
+      pointer-events:none;
+    }
+    details{
+      border-radius: 16px;
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(0,0,0,.14);
+      overflow:hidden;
+    }
+    summary{
+      cursor:pointer;
+      list-style:none;
+      padding:12px;
+      font-weight:850;
+      background: rgba(255,255,255,.04);
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    summary::-webkit-details-marker{ display:none; }
+    .detailsBody{ padding:12px; display:grid; gap:10px; }
+    .camControls{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    .hidden{ display:none !important; }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="header">
+      <div>
+        <div class="title" id="pageTitle">Contagocce Rev3</div>
+        <div class="sub" id="pageSub">
+          Menu → Manuale o Telecamera. Beep opzionale. Δt ultimo intervallo sotto GPM.
+        </div>
+      </div>
+      <div class="badge">
+        <span id="dot" class="dot"></span>
+        <span id="runLabel">STOP</span>
+      </div>
+    </div>
+
+    <!-- MENU -->
+    <div id="pageMenu" class="panel">
+      <div class="head">
+        <div>
+          <div class="h">Seleziona modalità</div>
+          <div class="small">Puoi tornare qui in qualsiasi momento</div>
+        </div>
+      </div>
+      <div class="menuGrid">
+        <div class="menuCard">
+          <div class="menuTitle">Manuale (consigliata)</div>
+          <div class="menuDesc">Tap grande + metriche + log.</div>
+          <div class="btnline" style="margin-top:12px">
+            <button class="primary" id="goManual">Apri Manuale</button>
+          </div>
+        </div>
+        <div class="menuCard">
+          <div class="menuTitle">Telecamera (opzionale)</div>
+          <div class="menuDesc">
+            Video + ROI trascinabile + auto detection (opz.) + tap di correzione. Impostazioni camera in basso.
+          </div>
+          <div class="btnline" style="margin-top:12px">
+            <button class="primary" id="goCamera">Apri Telecamera</button>
+          </div>
+        </div>
+        <div class="hint" style="grid-column:1/-1">
+          ⚠️ Auto-detection non certificata. Usa come supporto.
+        </div>
+      </div>
+    </div>
+
+    <!-- MANUAL -->
+    <div id="pageManual" class="panel hidden">
+      <div class="head">
+        <div>
+          <div class="h">Manuale</div>
+          <div class="small">Tocca la zona grande per registrare una goccia</div>
+        </div>
+        <div class="btnline">
+          <button id="backFromManual">⟵ Menu</button>
+          <button id="toggleLog_m">Log compatto</button>
+        </div>
+      </div>
+      <div class="body">
+        <div class="metrics">
+          <div class="metric">
+            <div class="k">Gocce/min</div>
+            <div class="v" id="gpm_m">—</div>
+            <div class="subline" id="dt_m">Δt ultimo: —</div>
+            <div class="u">GPM (media mobile)</div>
+          </div>
+          <div class="metric"><div class="k">Flusso</div><div class="v" id="mlh_m">—</div><div class="u">mL/h</div></div>
+          <div class="metric"><div class="k">Totale</div><div class="v" id="drops_m">0</div><div class="u">gocce</div></div>
+          <div class="metric"><div class="k">Tempo</div><div class="v" id="elapsed_m">00:00</div><div class="u">mm:ss</div></div>
+        </div>
+
+        <div class="tapZone" id="tapZone_m">
+          <div class="pulse" id="pulse_m"></div>
+          <div class="tapText">
+            <div class="big">TOCCA QUI = 1 GOCCIA</div>
+            <div class="sm">Suggerito su smartphone.</div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div>
+            <label>Drop factor (gtt/mL)</label>
+            <select id="dropFactor_m">
+              <option value="10">10</option><option value="15">15</option>
+              <option value="20" selected>20</option><option value="60">60 (micro)</option>
+              <option value="custom">Personalizzato…</option>
+            </select>
+          </div>
+          <div>
+            <label>Custom (gtt/mL)</label>
+            <input id="dropCustom_m" type="number" step="1" value="20" disabled />
+          </div>
+          <div>
+            <label>Finestra media (N)</label>
+            <input id="windowN_m" type="number" step="1" min="3" max="60" value="10" />
+          </div>
+          <div>
+            <label>Timeout fermo (s)</label>
+            <input id="idleSec_m" type="number" step="1" min="3" max="120" value="10" />
+          </div>
+
+          <div>
+            <label>Beep su goccia</label>
+            <select id="beep_m">
+              <option value="off" selected>NO</option>
+              <option value="on">SÌ</option>
+            </select>
+          </div>
+          <div>
+            <label>Volume beep</label>
+            <input id="beepVol_m" type="number" step="0.05" min="0" max="1" value="0.25" />
+          </div>
+        </div>
+
+        <div class="btnline">
+          <button class="ok" id="btnStart_m">Start</button>
+          <button class="primary" id="btnDrop_m">+1 Goccia</button>
+          <button id="btnUndo_m">Annulla</button>
+          <button class="danger" id="btnStop_m">Stop</button>
+          <button class="danger" id="btnReset_m">Reset</button>
+        </div>
+
+        <div class="log" id="log_m">Pronto. Premi Start.</div>
+      </div>
+    </div>
+
+    <!-- CAMERA -->
+    <div id="pageCamera" class="panel hidden">
+      <div class="head">
+        <div>
+          <div class="h">Telecamera</div>
+          <div class="small" id="autoState_c">Auto: OFF · CAM: OFF</div>
+        </div>
+        <div class="btnline">
+          <button id="backFromCamera">⟵ Menu</button>
+          <button id="toggleLog_c">Log compatto</button>
+        </div>
+      </div>
+
+      <div class="body">
+        <div class="camWrap" id="camWrap">
+          <video id="video" playsinline muted></video>
+          <canvas id="overlay"></canvas>
+        </div>
+
+        <div class="metrics">
+          <div class="metric">
+            <div class="k">Gocce/min</div>
+            <div class="v" id="gpm_c">—</div>
+            <div class="subline" id="dt_c">Δt ultimo: —</div>
+            <div class="u">GPM (media mobile)</div>
+          </div>
+          <div class="metric"><div class="k">Flusso</div><div class="v" id="mlh_c">—</div><div class="u">mL/h</div></div>
+          <div class="metric"><div class="k">Totale</div><div class="v" id="drops_c">0</div><div class="u">gocce</div></div>
+          <div class="metric"><div class="k">Tempo</div><div class="v" id="elapsed_c">00:00</div><div class="u">mm:ss</div></div>
+        </div>
+
+        <div class="tapZone" id="tapZone_c">
+          <div class="pulse" id="pulse_c"></div>
+          <div class="tapText">
+            <div class="big">TOCCA QUI = 1 GOCCIA</div>
+            <div class="sm">Tap di correzione anche con auto attivo.</div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div>
+            <label>Drop factor (gtt/mL)</label>
+            <select id="dropFactor_c">
+              <option value="10">10</option><option value="15">15</option>
+              <option value="20" selected>20</option><option value="60">60 (micro)</option>
+              <option value="custom">Personalizzato…</option>
+            </select>
+          </div>
+          <div>
+            <label>Custom (gtt/mL)</label>
+            <input id="dropCustom_c" type="number" step="1" value="20" disabled />
+          </div>
+          <div>
+            <label>Finestra media (N)</label>
+            <input id="windowN_c" type="number" step="1" min="3" max="60" value="10" />
+          </div>
+          <div>
+            <label>Timeout fermo (s)</label>
+            <input id="idleSec_c" type="number" step="1" min="3" max="120" value="10" />
+          </div>
+
+          <div>
+            <label>Beep su goccia</label>
+            <select id="beep_c">
+              <option value="off" selected>NO</option>
+              <option value="on">SÌ</option>
+            </select>
+          </div>
+          <div>
+            <label>Volume beep</label>
+            <input id="beepVol_c" type="number" step="0.05" min="0" max="1" value="0.25" />
+          </div>
+        </div>
+
+        <div class="btnline">
+          <button class="ok" id="btnStart_c">Start</button>
+          <button class="primary" id="btnDrop_c">+1 Goccia</button>
+          <button id="btnUndo_c">Annulla</button>
+          <button class="danger" id="btnStop_c">Stop</button>
+          <button class="danger" id="btnReset_c">Reset</button>
+        </div>
+
+        <div class="log" id="log_c">Pronto. Premi Start. (La camera è opzionale.)</div>
+
+        <details id="camSettings" open>
+          <summary>Impostazioni Telecamera (in basso)</summary>
+          <div class="detailsBody">
+            <div class="btnline">
+              <button class="primary" id="btnCam">Attiva camera</button>
+              <button class="danger" id="btnCamOff">Stop camera</button>
+            </div>
+
+            <div class="camControls">
+              <div>
+                <label>Auto count</label>
+                <select id="autoOn">
+                  <option value="off" selected>OFF</option>
+                  <option value="on">ON</option>
+                </select>
+              </div>
+              <div>
+                <label>TEST Auto in STOP</label>
+                <select id="autoTestStop">
+                  <option value="off" selected>OFF</option>
+                  <option value="on">ON</option>
+                </select>
+              </div>
+
+              <div>
+                <label>Calibrazione guidata</label>
+                <select id="guidedCalib">
+                  <option value="no" selected>NO</option>
+                  <option value="yes">SÌ</option>
+                </select>
+              </div>
+              <div>
+                <label>Azioni calibrazione</label>
+                <button id="btnCalib" class="primary" disabled>Avvia calibrazione</button>
+              </div>
+
+              <div>
+                <label>FPS analisi (1–30)</label>
+                <input id="fps" type="number" step="1" min="1" max="30" value="12" />
+              </div>
+              <div>
+                <label>Cooldown (ms)</label>
+                <input id="cooldown" type="number" step="50" min="100" max="3000" value="650" />
+              </div>
+
+              <div>
+                <label>Sensibilità (soglia)</label>
+                <input id="thresh" type="number" step="1" min="5" max="80" value="22" />
+              </div>
+              <div>
+                <label>Resize maniglia</label>
+                <select id="resizeMode">
+                  <option value="corner" selected>Angolo (in basso a destra)</option>
+                  <option value="edges">Bordi (semplice)</option>
+                </select>
+              </div>
+
+              <div>
+                <label>ROI X (0–1)</label>
+                <input id="roiX" type="number" step="0.01" min="0" max="1" value="0.35" />
+              </div>
+              <div>
+                <label>ROI Y (0–1)</label>
+                <input id="roiY" type="number" step="0.01" min="0" max="1" value="0.25" />
+              </div>
+              <div>
+                <label>ROI W (0–1)</label>
+                <input id="roiW" type="number" step="0.01" min="0.05" max="1" value="0.30" />
+              </div>
+              <div>
+                <label>ROI H (0–1)</label>
+                <input id="roiH" type="number" step="0.01" min="0.05" max="1" value="0.45" />
+              </div>
+            </div>
+
+            <div class="hint" id="calibHint">
+              Calibrazione guidata: se attiva, premi “Avvia calibrazione”, poi lascia passare ~10 gocce (trigger AUTO o TAP nella ROI).
+              Il sistema propone soglia e cooldown.
+            </div>
+          </div>
+        </details>
+
+        <div class="hint">
+          ⚠️ Auto-detection non certificata. Usa come supporto.
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  // ===================== NAV =====================
+  const pageTitle = document.getElementById('pageTitle');
+  const pageSub = document.getElementById('pageSub');
+  const pageMenu = document.getElementById('pageMenu');
+  const pageManual = document.getElementById('pageManual');
+  const pageCamera = document.getElementById('pageCamera');
+
+  document.getElementById('goManual').onclick = () => showPage('manual');
+  document.getElementById('goCamera').onclick = () => showPage('camera');
+  document.getElementById('backFromManual').onclick = () => showPage('menu');
+  document.getElementById('backFromCamera').onclick = () => showPage('menu');
+
+  function showPage(which){
+    pageMenu.classList.add('hidden');
+    pageManual.classList.add('hidden');
+    pageCamera.classList.add('hidden');
+
+    if (which === 'menu'){
+      pageTitle.textContent = "Contagocce Rev3";
+      pageSub.textContent = "Menu → Manuale o Telecamera. Beep opzionale. Δt ultimo intervallo sotto GPM.";
+      pageMenu.classList.remove('hidden');
+      stopAll();
+      setRunBadge(false);
+      activeMode = null;
+      return;
+    }
+    if (which === 'manual'){
+      pageTitle.textContent = "Contagocce Rev3 — Manuale";
+      pageSub.textContent = "Modalità manuale: tocchi lo schermo e registri ogni goccia.";
+      pageManual.classList.remove('hidden');
+      selectMode('manual');
+      return;
+    }
+    if (which === 'camera'){
+      pageTitle.textContent = "Contagocce Rev3 — Telecamera";
+      pageSub.textContent = "Video + ROI trascinabile + auto detection (opz.) + tap di correzione. Impostazioni camera in basso.";
+      pageCamera.classList.remove('hidden');
+      selectMode('camera');
+      return;
+    }
+  }
+
+  // ===================== BADGE =====================
+  const elDot = document.getElementById('dot');
+  const elRunLabel = document.getElementById('runLabel');
+  function setRunBadge(on){
+    elRunLabel.textContent = on ? "RUN" : "STOP";
+    elDot.classList.toggle('on', !!on);
+  }
+
+  // ===================== BEEP (WebAudio) =====================
+  let audioCtx = null;
+  function ensureAudio(){
+    if (!audioCtx){
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === "suspended") audioCtx.resume().catch(()=>{});
+  }
+  function beepIfEnabled(source){
+    const u = UI[activeMode];
+    if (!u) return;
+    const enabled = (u.beep.value === "on");
+    if (!enabled) return;
+    ensureAudio();
+
+    const vol = Math.min(1, Math.max(0, +u.beepVol.value || 0.25));
+    const dur = 0.05;
+    const t0 = audioCtx.currentTime;
+
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    const freq = (source === "AUTO") ? 1200 : 900;
+    osc.frequency.value = freq;
+    osc.type = "sine";
+
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(Math.max(0.0001, vol), t0 + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(t0);
+    osc.stop(t0 + dur + 0.01);
+  }
+
+  window.addEventListener('pointerdown', () => { if (activeMode) ensureAudio(); }, {passive:true});
+
+  // ===================== ENGINE =====================
+  let running = false;
+  let startTs = null;
+  let lastDropTs = null;
+  let drops = 0;
+  let dropTimes = [];
+  let intervals = [];
+  let tickTimer = null;
+  let activeMode = null;
+
+  function now(){ return performance.now(); }
+  function pad2(n){ return String(n).padStart(2,'0'); }
+  function fmtMMSS(ms){
+    const s = Math.max(0, Math.floor(ms/1000));
+    return `${pad2(Math.floor(s/60))}:${pad2(s%60)}`;
+  }
+
+  function getEls(prefix){
+    return {
+      gpm: document.getElementById(`gpm${prefix}`),
+      dt: document.getElementById(`dt${prefix}`),
+      mlh: document.getElementById(`mlh${prefix}`),
+      drops: document.getElementById(`drops${prefix}`),
+      elapsed: document.getElementById(`elapsed${prefix}`),
+      log: document.getElementById(`log${prefix}`),
+      dropFactor: document.getElementById(`dropFactor${prefix}`),
+      dropCustom: document.getElementById(`dropCustom${prefix}`),
+      windowN: document.getElementById(`windowN${prefix}`),
+      idleSec: document.getElementById(`idleSec${prefix}`),
+      beep: document.getElementById(`beep${prefix}`),
+      beepVol: document.getElementById(`beepVol${prefix}`),
+      btnStart: document.getElementById(`btnStart${prefix}`),
+      btnStop: document.getElementById(`btnStop${prefix}`),
+      btnReset: document.getElementById(`btnReset${prefix}`),
+      btnDrop: document.getElementById(`btnDrop${prefix}`),
+      btnUndo: document.getElementById(`btnUndo${prefix}`),
+      tapZone: document.getElementById(`tapZone${prefix}`),
+      pulse: document.getElementById(`pulse${prefix}`),
+    };
+  }
+  const UI = { manual: getEls('_m'), camera: getEls('_c') };
+
+  function pushLog(line){
+    const u = UI[activeMode];
+    if (!u) return;
+    const lines = u.log.textContent.split("\n");
+    const newLines = (lines[0].startsWith("Pronto.")) ? [] : lines;
+    newLines.push(line);
+    while (newLines.length > 260) newLines.shift();
+    u.log.textContent = newLines.join("\n") || "—";
+    u.log.scrollTop = u.log.scrollHeight;
+  }
+
+  function getDropFactor(){
+    const u = UI[activeMode];
+    const v = u.dropFactor.value;
+    if (v === "custom"){
+      const c = +u.dropCustom.value;
+      return (isFinite(c) && c>0) ? c : 20;
+    }
+    return +v;
+  }
+  function getWindowN(){
+    const u = UI[activeMode];
+    const n = Math.round(+u.windowN.value);
+    return Math.min(60, Math.max(3, isFinite(n) ? n : 10));
+  }
+  function getIdleMs(){
+    const u = UI[activeMode];
+    const s = +u.idleSec.value;
+    return ((isFinite(s) && s>0) ? s : 10) * 1000;
+  }
+
+  function computeGpm(){
+    const N = getWindowN();
+    if (intervals.length === 0) return null;
+    const slice = intervals.slice(-N);
+    const mean = slice.reduce((a,b)=>a+b,0) / slice.length;
+    if (!isFinite(mean) || mean<=0) return null;
+    return 60 / mean;
+  }
+  function computeMlh(gpm){
+    if (gpm === null) return null;
+    return (gpm / getDropFactor()) * 60;
+  }
+
+  function lastDt(){
+    if (intervals.length === 0) return null;
+    const v = intervals[intervals.length - 1];
+    return (isFinite(v) && v > 0) ? v : null;
+  }
+
+  function updateMetrics(){
+    const u = UI[activeMode];
+    if (!u) return;
+
+    u.drops.textContent = String(drops);
+
+    const dt = lastDt();
+    u.dt.textContent = (dt === null) ? "Δt ultimo: —" : `Δt ultimo: ${dt.toFixed(3)} s`;
+
+    if (!running){
+      u.elapsed.textContent = "00:00";
+      u.gpm.textContent = "—";
+      u.mlh.textContent = "—";
+      setRunBadge(false);
+      return;
+    }
+    setRunBadge(true);
+
+    const t = now();
+    u.elapsed.textContent = fmtMMSS(t - startTs);
+
+    if (lastDropTs && (t - lastDropTs) > getIdleMs()){
+      u.gpm.textContent = "0.0";
+      u.mlh.textContent = "0.0";
+      return;
+    }
+
+    const gpm = computeGpm();
+    const mlh = computeMlh(gpm);
+
+    u.gpm.textContent = (gpm === null) ? "—" : gpm.toFixed(1);
+    u.mlh.textContent = (mlh === null) ? "—" : mlh.toFixed(1);
+  }
+
+  function start(){
+    if (running) return;
+    running = true;
+    startTs = now();
+    lastDropTs = null;
+    drops = 0;
+    dropTimes = [];
+    intervals = [];
+    const u = UI[activeMode];
+    u.log.textContent = "";
+    pushLog("START");
+    if (tickTimer) clearInterval(tickTimer);
+    tickTimer = setInterval(updateMetrics, 200);
+    updateMetrics();
+  }
+  function stop(){
+    if (!running) return;
+    running = false;
+    if (tickTimer) { clearInterval(tickTimer); tickTimer = null; }
+    pushLog("STOP");
+    updateMetrics();
+  }
+  function resetAll(){
+    stop();
+    startTs = null;
+    lastDropTs = null;
+    drops = 0;
+    dropTimes = [];
+    intervals = [];
+    const u = UI[activeMode];
+    u.drops.textContent = "0";
+    u.elapsed.textContent = "00:00";
+    u.gpm.textContent = "—";
+    u.mlh.textContent = "—";
+    u.dt.textContent = "Δt ultimo: —";
+    u.log.textContent = "Pronto. Premi Start.";
+  }
+
+  function addDrop(source="MAN", allowWhenStopped=false){
+    if (!running && !allowWhenStopped) return;
+
+    const t = now();
+    if (!running && allowWhenStopped){
+      pushLog(`[${source}] trigger (STOP)`);
+      beepIfEnabled(source);
+      return;
+    }
+
+    drops += 1;
+
+    if (lastDropTs !== null){
+      const dt = (t - lastDropTs) / 1000;
+      intervals.push(dt);
+      pushLog(`[${source}] #${drops}  Δt=${dt.toFixed(3)}s`);
+    } else {
+      pushLog(`[${source}] #${drops}  (prima)`);
+    }
+
+    dropTimes.push(t);
+    lastDropTs = t;
+
+    beepIfEnabled(source);
+    updateMetrics();
+  }
+
+  function undoLast(){
+    if (!running) return;
+    if (drops <= 0) return;
+    drops -= 1;
+    dropTimes.pop();
+    if (intervals.length > 0) intervals.pop();
+    lastDropTs = dropTimes.length ? dropTimes[dropTimes.length - 1] : null;
+    pushLog(`UNDO → gocce=${drops}`);
+    updateMetrics();
+  }
+
+  function flashPulse(u, clientX, clientY){
+    const rect = u.tapZone.getBoundingClientRect();
+    const x = ((clientX - rect.left) / rect.width) * 100;
+    const y = ((clientY - rect.top) / rect.height) * 100;
+    u.pulse.style.setProperty("--x", x + "%");
+    u.pulse.style.setProperty("--y", y + "%");
+    u.pulse.classList.add("on");
+    setTimeout(()=>u.pulse.classList.remove("on"), 120);
+  }
+
+  function wireUI(mode){
+    const u = UI[mode];
+    u.btnStart.onclick = start;
+    u.btnStop.onclick = stop;
+    u.btnReset.onclick = resetAll;
+    u.btnDrop.onclick = () => addDrop("BTN");
+    u.btnUndo.onclick = undoLast;
+
+    u.dropFactor.addEventListener('change', () => {
+      const isCustom = u.dropFactor.value === "custom";
+      u.dropCustom.disabled = !isCustom;
+      updateMetrics();
+    });
+    u.dropCustom.addEventListener('input', updateMetrics);
+    u.windowN.addEventListener('input', updateMetrics);
+    u.idleSec.addEventListener('input', updateMetrics);
+
+    u.tapZone.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      ensureAudio();
+      flashPulse(u, e.clientX, e.clientY);
+      addDrop("TAP");
+    }, {passive:false});
+  }
+  wireUI('manual');
+  wireUI('camera');
+
+  document.getElementById('toggleLog_m').onclick = () => UI.manual.log.classList.toggle('compact');
+  document.getElementById('toggleLog_c').onclick = () => UI.camera.log.classList.toggle('compact');
+
+  window.addEventListener('keydown', (e) => {
+    if (!activeMode) return;
+    if (e.code === "Space") e.preventDefault();
+    if (e.code === "Space" || e.key === "Enter"){ ensureAudio(); addDrop("KEY"); return; }
+    if (e.key === "Backspace"){ e.preventDefault(); undoLast(); return; }
+    if (e.key === "Escape"){ stop(); return; }
+  }, {passive:false});
+
+  function selectMode(mode){
+    const from = (mode === 'manual') ? UI.camera : UI.manual;
+    const to = UI[mode];
+
+    to.dropFactor.value = from.dropFactor.value;
+    to.dropCustom.value = from.dropCustom.value;
+    to.windowN.value = from.windowN.value;
+    to.idleSec.value = from.idleSec.value;
+    to.beep.value = from.beep.value;
+    to.beepVol.value = from.beepVol.value;
+
+    to.dropCustom.disabled = (to.dropFactor.value !== "custom");
+
+    activeMode = mode;
+    updateMetrics();
+  }
+
+  function stopAll(){
+    running = false;
+    if (tickTimer) { clearInterval(tickTimer); tickTimer = null; }
+    stopCamera();
+  }
+
+  // ===================== CAMERA =====================
+  const autoState_c = document.getElementById('autoState_c');
+  const video = document.getElementById('video');
+  const overlay = document.getElementById('overlay');
+  const octx = overlay.getContext('2d', { willReadFrequently: true });
+  const camWrap = document.getElementById('camWrap');
+
+  const btnCam = document.getElementById('btnCam');
+  const btnCamOff = document.getElementById('btnCamOff');
+
+  const roiX = document.getElementById('roiX');
+  const roiY = document.getElementById('roiY');
+  const roiW = document.getElementById('roiW');
+  const roiH = document.getElementById('roiH');
+
+  const thresh = document.getElementById('thresh');
+  const cooldown = document.getElementById('cooldown');
+  const fps = document.getElementById('fps');
+  const autoOn = document.getElementById('autoOn');
+  const autoTestStop = document.getElementById('autoTestStop');
+  const resizeMode = document.getElementById('resizeMode');
+
+  const guidedCalib = document.getElementById('guidedCalib');
+  const btnCalib = document.getElementById('btnCalib');
+
+  let stream = null;
+  let analyzeTimer = null;
+
+  const ac = document.createElement('canvas');
+  const actx = ac.getContext('2d', { willReadFrequently: true });
+
+  let prevMean = null;
+  let lastAutoTs = 0;
+
+  let calibActive = false;
+  let calibDeltas = [];
+  let calibTimes = [];
+
+  function clamp01(v){ v = +v; if (!isFinite(v)) return 0; return Math.max(0, Math.min(1, v)); }
+  function getROI(){
+    return {
+      x: clamp01(roiX.value),
+      y: clamp01(roiY.value),
+      w: Math.max(0.05, clamp01(roiW.value)),
+      h: Math.max(0.05, clamp01(roiH.value)),
+    };
+  }
+  function setROI(r){
+    r.w = Math.max(0.05, Math.min(1, r.w));
+    r.h = Math.max(0.05, Math.min(1, r.h));
+    r.x = Math.max(0, Math.min(1 - r.w, r.x));
+    r.y = Math.max(0, Math.min(1 - r.h, r.y));
+    roiX.value = r.x.toFixed(2);
+    roiY.value = r.y.toFixed(2);
+    roiW.value = r.w.toFixed(2);
+    roiH.value = r.h.toFixed(2);
+  }
+
+  function setAutoStateText(){
+    const cam = stream ? "ON" : "OFF";
+    const a = (autoOn.value === "on") ? "ON" : "OFF";
+    const t = (autoTestStop.value === "on") ? "TEST_STOP=ON" : "TEST_STOP=OFF";
+    const c = calibActive ? "CALIB=ON" : "CALIB=OFF";
+    autoState_c.textContent = `Auto: ${a} · CAM: ${cam} · ${t} · ${c}`;
+  }
+
+  function computeMeanLuma(imgData){
+    const d = imgData.data;
+    const step = 16;
+    let sum = 0, count = 0;
+    for (let i=0; i<d.length; i += 4*step){
+      const r = d[i], g = d[i+1], b = d[i+2];
+      sum += 0.2126*r + 0.7152*g + 0.0722*b;
+      count++;
+    }
+    return count ? (sum / count) : 0;
+  }
+
+  function drawOverlay(mean, delta, triggered){
+    if (!video.videoWidth) return;
+
+    overlay.width = video.videoWidth;
+    overlay.height = video.videoHeight;
+
+    const r = getROI();
+    const x = Math.round(r.x * overlay.width);
+    const y = Math.round(r.y * overlay.height);
+    const w = Math.round(r.w * overlay.width);
+    const h = Math.round(r.h * overlay.height);
+
+    octx.clearRect(0,0,overlay.width, overlay.height);
+
+    octx.lineWidth = Math.max(2, overlay.width * 0.004);
+    octx.strokeStyle = triggered ? "rgba(34,197,94,0.95)" : "rgba(43,108,255,0.95)";
+    octx.strokeRect(x,y,w,h);
+
+    const handle = Math.max(14, overlay.width*0.02);
+    octx.fillStyle = "rgba(255,255,255,0.85)";
+    octx.fillRect(x+w-handle, y+h-handle, handle, handle);
+
+    octx.fillStyle = "rgba(0,0,0,0.35)";
+    octx.fillRect(0,0,overlay.width, Math.max(28, overlay.height*0.06));
+    octx.fillStyle = "rgba(255,255,255,0.95)";
+    octx.font = `${Math.max(14, overlay.width*0.02)}px system-ui, -apple-system, Segoe UI, Roboto, Arial`;
+    const t = `mean=${mean?.toFixed?.(1) ?? "—"} Δ=${delta?.toFixed?.(1) ?? "—"} thr=${(+thresh.value).toFixed(0)} cd=${(+cooldown.value).toFixed(0)}ms`;
+    octx.fillText(t, 10, Math.max(20, overlay.height*0.045));
+
+    if (calibActive){
+      octx.fillStyle = "rgba(0,0,0,0.35)";
+      octx.fillRect(0, overlay.height - Math.max(28, overlay.height*0.06), overlay.width, Math.max(28, overlay.height*0.06));
+      octx.fillStyle = "rgba(255,255,255,0.95)";
+      octx.fillText(`CALIBRAZIONE: trigger ${calibDeltas.length}/10`, 10, overlay.height - 10);
+    }
+  }
+
+  function analyzeFrame(){
+    if (!stream || !video.videoWidth) return;
+
+    const vw = video.videoWidth, vh = video.videoHeight;
+    ac.width = vw; ac.height = vh;
+    actx.drawImage(video, 0, 0, vw, vh);
+
+    const r = getROI();
+    const x = Math.round(r.x * vw);
+    const y = Math.round(r.y * vh);
+    const w = Math.round(r.w * vw);
+    const h = Math.round(r.h * vh);
+    if (w <= 2 || h <= 2) return;
+
+    const img = actx.getImageData(x, y, w, h);
+    const mean = computeMeanLuma(img);
+
+    let delta = 0;
+    if (prevMean !== null) delta = Math.abs(mean - prevMean);
+    prevMean = mean;
+
+    const thr = +thresh.value;
+    const cd = +cooldown.value;
+    const tnow = now();
+    const autoEnabled = (autoOn.value === "on");
+
+    let triggered = false;
+
+    if (autoEnabled && delta >= thr && (tnow - lastAutoTs) >= cd){
+      triggered = true;
+      lastAutoTs = tnow;
+
+      const allowInStop = (autoTestStop.value === "on");
+      const canCount = (activeMode === 'camera') && (running || allowInStop);
+
+      if (canCount){
+        if (calibActive){
+          calibDeltas.push(delta);
+          calibTimes.push(tnow);
+          pushLog(`[CALIB] trigger ${calibDeltas.length}/10  Δ=${delta.toFixed(1)}`);
+          if (calibDeltas.length >= 10){
+            finishCalibration();
+          }
+        }
+
+        if (running) addDrop("AUTO");
+        else addDrop("AUTO", true);
+      }
+    }
+
+    drawOverlay(mean, delta, triggered);
+  }
+
+  async function startCamera(){
+    try{
+      if (!navigator.mediaDevices?.getUserMedia){
+        pushLog("Camera non supportata da questo browser.");
+        return;
+      }
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: "environment" } },
+        audio: false
+      });
+      video.srcObject = stream;
+      await video.play();
+      pushLog("CAMERA: ON");
+      setAutoStateText();
+
+      stopAnalyze();
+      const targetFps = Math.min(30, Math.max(1, Math.round(+fps.value || 12)));
+      analyzeTimer = setInterval(analyzeFrame, Math.round(1000/targetFps));
+    }catch(err){
+      pushLog("Errore avvio camera: " + (err?.message || err));
+      stream = null;
+      setAutoStateText();
+    }
+  }
+
+  function stopAnalyze(){
+    if (analyzeTimer){
+      clearInterval(analyzeTimer);
+      analyzeTimer = null;
+    }
+  }
+
+  function stopCamera(){
+    stopAnalyze();
+    prevMean = null;
+    calibActive = false;
+    calibDeltas = [];
+    calibTimes = [];
+    if (stream){
+      stream.getTracks().forEach(t => t.stop());
+      stream = null;
+    }
+    video.srcObject = null;
+    octx.clearRect(0,0,overlay.width,overlay.height);
+    setAutoStateText();
+  }
+
+  btnCam.onclick = () => { ensureAudio(); startCamera(); };
+  btnCamOff.onclick = () => { stopCamera(); pushLog("CAMERA: OFF"); };
+
+  autoOn.addEventListener('change', () => { setAutoStateText(); pushLog(`AUTO: ${autoOn.value.toUpperCase()}`); });
+  autoTestStop.addEventListener('change', () => { setAutoStateText(); pushLog(`AUTO_TEST_STOP: ${autoTestStop.value.toUpperCase()}`); });
+
+  fps.addEventListener('change', () => {
+    if (!stream) return;
+    stopAnalyze();
+    const targetFps = Math.min(30, Math.max(1, Math.round(+fps.value || 12)));
+    analyzeTimer = setInterval(analyzeFrame, Math.round(1000/targetFps));
+    pushLog(`FPS analisi = ${targetFps}`);
+  });
+
+  [roiX, roiY, roiW, roiH].forEach(inp => inp.addEventListener('input', () => setROI(getROI())));
+
+  guidedCalib.addEventListener('change', () => {
+    const on = (guidedCalib.value === "yes");
+    btnCalib.disabled = !on;
+    pushLog(`CALIBRAZIONE GUIDATA: ${on ? "ON" : "OFF"}`);
+  });
+
+  btnCalib.addEventListener('click', () => {
+    if (guidedCalib.value !== "yes"){
+      pushLog("Calibrazione guidata è OFF.");
+      return;
+    }
+    if (!stream){
+      pushLog("Avvia prima la camera.");
+      return;
+    }
+    calibActive = true;
+    calibDeltas = [];
+    calibTimes = [];
+    setAutoStateText();
+    pushLog("CALIB: avviata → attendi ~10 gocce (trigger AUTO nella ROI).");
+  });
+
+  function finishCalibration(){
+    calibActive = false;
+    setAutoStateText();
+
+    const sorted = [...calibDeltas].sort((a,b)=>a-b);
+    const median = sorted[Math.floor(sorted.length/2)];
+    const suggestedThresh = Math.max(5, Math.round(median * 0.70));
+
+    let suggestedCooldown = +cooldown.value || 650;
+    if (calibTimes.length >= 2){
+      const dts = [];
+      for (let i=1;i<calibTimes.length;i++) dts.push(calibTimes[i]-calibTimes[i-1]);
+      dts.sort((a,b)=>a-b);
+      const medDt = dts[Math.floor(dts.length/2)];
+      suggestedCooldown = Math.round(Math.min(3000, Math.max(150, medDt * 0.40)));
+    }
+
+    pushLog(`CALIB: finita → soglia consigliata=${suggestedThresh}, cooldown consigliato=${suggestedCooldown}ms`);
+    thresh.value = String(suggestedThresh);
+    cooldown.value = String(suggestedCooldown);
+    pushLog("CALIB: impostazioni applicate (Soglia/Cooldown).");
+  }
+
+  // ROI drag/resize
+  let drag = { active:false, mode:null, startPx:{x:0,y:0}, startR:{}, pointerId:null };
+
+  function getWrapRect(){ return camWrap.getBoundingClientRect(); }
+  function pxToNorm(pxX, pxY){
+    const rect = getWrapRect();
+    return { nx: (pxX - rect.left)/rect.width, ny: (pxY - rect.top)/rect.height };
+  }
+  function hitTestHandle(nx, ny, r){
+    const handleN = 0.06;
+    const hx0 = r.x + r.w*(1-handleN);
+    const hy0 = r.y + r.h*(1-handleN);
+    return (nx >= hx0 && nx <= r.x+r.w && ny >= hy0 && ny <= r.y+r.h);
+  }
+  function hitTestROI(nx, ny, r){
+    return (nx >= r.x && nx <= r.x+r.w && ny >= r.y && ny <= r.y+r.h);
+  }
+
+  camWrap.addEventListener('pointerdown', (e) => {
+    if (!video.videoWidth) return;
+    e.preventDefault();
+    const {nx, ny} = pxToNorm(e.clientX, e.clientY);
+    const r = getROI();
+
+    let mode = null;
+    if (hitTestROI(nx, ny, r)){
+      mode = hitTestHandle(nx, ny, r) ? 'resize' : 'move';
+    } else {
+      setROI({ ...r, x: nx - r.w/2, y: ny - r.h/2 });
+      return;
+    }
+
+    drag.active = true;
+    drag.mode = mode;
+    drag.startPx = {x:nx, y:ny};
+    drag.startR = { ...r };
+    drag.pointerId = e.pointerId;
+    camWrap.setPointerCapture(e.pointerId);
+  }, {passive:false});
+
+  camWrap.addEventListener('pointermove', (e) => {
+    if (!drag.active) return;
+    e.preventDefault();
+    const {nx, ny} = pxToNorm(e.clientX, e.clientY);
+    const dx = nx - drag.startPx.x;
+    const dy = ny - drag.startPx.y;
+
+    const r0 = drag.startR;
+    let r = { ...r0 };
+
+    if (drag.mode === 'move'){
+      r.x = r0.x + dx;
+      r.y = r0.y + dy;
+    } else if (drag.mode === 'resize'){
+      r.w = r0.w + dx;
+      r.h = r0.h + dy;
+      if (resizeMode.value === "edges"){
+        r.w = Math.max(0.08, r.w);
+        r.h = Math.max(0.10, r.h);
+      }
+    }
+    setROI(r);
+  }, {passive:false});
+
+  function endDrag(e){
+    if (!drag.active) return;
+    e.preventDefault();
+    try{ camWrap.releasePointerCapture(drag.pointerId); }catch{}
+    drag.active = false;
+    drag.mode = null;
+    drag.pointerId = null;
+  }
+  camWrap.addEventListener('pointerup', endDrag, {passive:false});
+  camWrap.addEventListener('pointercancel', endDrag, {passive:false});
+
+  // INIT
+  function init(){
+    setRunBadge(false);
+    setAutoStateText();
+    showPage('menu');
+  }
+  init();
+})();
+</script>
+</body>
+</html>
